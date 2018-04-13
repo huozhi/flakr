@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>functional dom</title>
+</head>
+<body>
+<script src="index.js"></script>
+<script>
+const div = tag('div')
+const span = tag('span')
+const button = tag('button')
+
+const vdom = div([
+  button(
+    {class: 'btn', onclick: () => alert('welcome')},
+    'greet'
+  )
+])
+
+const dom = createElement(vdom)
+document.body.appendChild(dom)
+</script>
+</body>
+</html>
