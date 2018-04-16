@@ -1,0 +1,26 @@
+{
+  "name": "f-dom",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huozhi/f-dom.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/huozhi/f-dom/issues"
+  },
+  "homepage": "https://github.com/huozhi/f-dom#readme",
+  "babel": {
+    "presets": "env"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.6.1",
+    "jest": "^22.4.2"
+  }
+}

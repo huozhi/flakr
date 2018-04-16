@@ -38,7 +38,7 @@ const createElement = (vdom) => {
   return node
 }
 
-const tag = (tag) => (props, children) => {
+const vnode = (tag) => (props, children) => {
   if (Array.isArray(props)) {
     children = props
     props = null
@@ -50,3 +50,6 @@ const tag = (tag) => (props, children) => {
   }
 }
 
+const DOM = new Proxy({}, {get: (_, key) => vnode(key)})
+
+export {createElement as render, DOM}
