@@ -6,6 +6,8 @@ const createElement = (vdom) => {
   if (typeof vdom === 'string') {
     node = document.createTextNode('' + vdom)
   } else if (typeof vdom === 'object' && vdom !== null) {
+    // console.log('v', vdom)
+
     node = document.createElement(vdom.name)
     const {children} = vdom.props
     if (Array.isArray(children)) {
@@ -38,18 +40,37 @@ const createElement = (vdom) => {
   return node
 }
 
+function h(type, props, ...args) {
+  const children = []
+  let node
+
+  // args is jsx children
+  while (args.length) {
+    node = args.pop()
+    if (Array.isArray(node)) {
+      Array.prototype.push.apply(children, node)
+    } else if (node != null && typeof node !== 'boolean') {
+      if (typeof node === 'number') {
+        node = node + ''
+      }
+      children.unshift(node)
+    }
+  }
+  props = props || {}
+  props.children = children
+
+  return typeof type === 'function' ? type(props) : {name: type, props}
+}
+
 const vnode = (tag) => (props, children) => {
   if (Array.isArray(props)) {
     children = props
     props = null
   }
 
-  return {
-    name: tag,
-    props: Object.assign(props || {}, {children}),
-  }
+  return h(tag, props, ...children)
 }
 
 const DOM = new Proxy({}, {get: (_, key) => vnode(key)})
 
-export {createElement as render, DOM}
+export {createElement as render, DOM, h}

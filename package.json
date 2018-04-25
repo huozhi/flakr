@@ -17,9 +17,13 @@
   },
   "homepage": "https://github.com/huozhi/f-dom#readme",
   "babel": {
-    "presets": "env"
+    "presets": "env",
+    "plugins": [
+      ["transform-react-jsx", {"pragma": "h"}]
+    ]
   },
   "devDependencies": {
+    "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-preset-env": "^1.6.1",
     "jest": "^22.4.2"
   }
