@@ -1,4 +1,11 @@
-const createElement = (vdom) => {
+function isClass(type) {
+  return (
+    Boolean(type.prototype) &&
+    Boolean(type.prototype.isComponent)
+  )
+}
+
+function createElement(vdom) {
   let node
   if (typeof vdom === 'number') {
     node = node + ''
@@ -6,20 +13,26 @@ const createElement = (vdom) => {
   if (typeof vdom === 'string') {
     node = document.createTextNode('' + vdom)
   } else if (typeof vdom === 'object' && vdom !== null) {
-    // console.log('v', vdom)
+    const {type, props} = vdom
+    if (isClass(type)) {
+      const instance = new type(props)
+      instance.props = props
+      node = instance.render()
+      return createElement(node)
+    }
 
-    node = document.createElement(vdom.name)
-    const {children} = vdom.props
+    node = document.createElement(vdom.type)
+    const {children} = props
     if (Array.isArray(children)) {
-      for (const child of vdom.props.children) {
+      for (const child of children) {
         node.appendChild(createElement(child))
       }
     } else if (children != null) {
       node.appendChild(createElement(children))
     }
 
-    for (const prop of Object.keys(vdom.props)) {
-      const value = vdom.props[prop]
+    for (const prop of Object.keys(props)) {
+      const value = props[prop]
 
       if (prop === 'children' || value == null || value === false) {
         continue
@@ -59,18 +72,11 @@ function h(type, props, ...args) {
   props = props || {}
   props.children = children
 
-  return typeof type === 'function' ? type(props) : {name: type, props}
-}
-
-const vnode = (tag) => (props, children) => {
-  if (Array.isArray(props)) {
-    children = props
-    props = null
+  if (typeof type === 'function' && !isClass(type)) {
+    return type(props)
+  } else {
+    return {type, props}
   }
-
-  return h(tag, props, ...children)
 }
 
-const DOM = new Proxy({}, {get: (_, key) => vnode(key)})
-
-export {createElement as render, DOM, h}
+export {createElement, h}
