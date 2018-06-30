@@ -1,4 +1,4 @@
-function isClass(type) {
+function isComponentClass(type) {
   return (
     Boolean(type.prototype) &&
     Boolean(type.prototype.isComponent)
@@ -7,46 +7,50 @@ function isClass(type) {
 
 function createElement(vdom) {
   let node
-  if (typeof vdom === 'number') {
-    node = node + ''
-  }
-  if (typeof vdom === 'string') {
+  if (typeof vdom === 'string' || typeof vdom === 'number') {
     node = document.createTextNode('' + vdom)
   } else if (typeof vdom === 'object' && vdom !== null) {
     const {type, props} = vdom
-    if (isClass(type)) {
+    if (isComponentClass(type)) {
       const instance = new type(props)
       instance.props = props
       node = instance.render()
       return createElement(node)
+    } else if (typeof type === 'function') {
+      return createElement(type(props))
     }
 
-    node = document.createElement(vdom.type)
-    const {children} = props
-    if (Array.isArray(children)) {
-      for (const child of children) {
-        node.appendChild(createElement(child))
-      }
-    } else if (children != null) {
-      node.appendChild(createElement(children))
+    return createDOMNode(type, props)
+  }
+  return node
+}
+
+function createDOMNode(type, props) {
+  const node = document.createElement(type)
+  const children = props.children
+  if (Array.isArray(children)) {
+    for (const child of children) {
+      node.appendChild(createElement(child))
+    }
+  } else if (children != null) {
+    node.appendChild(createElement(children))
+  }
+
+  for (const prop of Object.keys(props)) {
+    const value = props[prop]
+
+    if (prop === 'children' || value == null || value === false) {
+      continue
     }
 
-    for (const prop of Object.keys(props)) {
-      const value = props[prop]
-
-      if (prop === 'children' || value == null || value === false) {
-        continue
-      }
-
-      if (prop[0] === 'o' && prop[1] === 'n') {
-        const event = prop.slice(2)
-        node.addEventListener(event, value)
-      } else {
-        try {
-          node[prop] = value
-        } catch (_) {
-          node.setAttribute(prop, value)
-        }
+    if (prop[0] === 'o' && prop[1] === 'n') {
+      const event = prop.slice(2)
+      node.addEventListener(event, value)
+    } else {
+      try {
+        node[prop] = value
+      } catch (_) {
+        node.setAttribute(prop, value)
       }
     }
   }
@@ -72,11 +76,7 @@ function h(type, props, ...args) {
   props = props || {}
   props.children = children
 
-  if (typeof type === 'function' && !isClass(type)) {
-    return type(props)
-  } else {
-    return {type, props}
-  }
+  return {type, props}
 }
 
 export {createElement, h}
