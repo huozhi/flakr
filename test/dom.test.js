@@ -1,4 +1,4 @@
-import {h, createElement, Component} from '../src'
+import {h, mount, Component} from '../src'
 
 beforeEach(() => {
   document.body.innerHTML = ''
@@ -6,7 +6,7 @@ beforeEach(() => {
 
 test('jsx element', () => {
   const label = 'this is pure function'
-  const dom = createElement(
+  const dom = mount(
     <div>
       <button className="btn" onclick={() => alert('hello func')}>
         {label}
@@ -28,7 +28,7 @@ test('jsx functional element', () => {
       <span className="label">{text}</span>
     </div>
   )
-  const dom = createElement(<View text={text} />)
+  const dom = mount(<View text={text} />)
 
   document.body.appendChild(dom)
   
@@ -52,7 +52,7 @@ test('jsx class instance element', () => {
   }
   // View.prototype.isComponent = true // hack for inhreit from Component
   const label = 'this is class'
-  const dom = createElement(<View text={label} />)
+  const dom = mount(<View text={label} />)
   document.body.appendChild(dom)
   
   const btn = document.querySelector('button')
