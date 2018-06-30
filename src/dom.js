@@ -1,4 +1,24 @@
-import {createElement} from './element'
+import {isComponentClass} from './component'
+
+function mount(vdom) {
+  let node
+  if (typeof vdom === 'string' || typeof vdom === 'number') {
+    node = createTextNode(vdom)
+  } else if (typeof vdom === 'object' && vdom !== null) {
+    const {type, props} = vdom
+    if (isComponentClass(type)) {
+      const instance = new type(props)
+      instance.props = props
+      node = instance.render()
+      return mount(node)
+    } else if (typeof type === 'function') {
+      return mount(type(props))
+    }
+
+    return createDOMNode(type, props)
+  }
+  return node
+}
 
 function createTextNode(value) {
   return document.createTextNode(value)
@@ -10,7 +30,7 @@ function createDOMNode(type, props) {
     props.children = [props.children]
   }
   for (const child of props.children) {
-    node.appendChild(createElement(child))
+    node.appendChild(mount(child))
   }
 
   for (const prop of Object.keys(props)) {
@@ -32,4 +52,4 @@ function createDOMNode(type, props) {
   return node
 }
 
-export {createTextNode, createDOMNode}
+export {mount}

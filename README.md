@@ -10,7 +10,7 @@ npm test # run jest tests
 ## Usage
 
 ```js
-import {h, createElemnt, Component} from 'f-dom'
+import {h, mount, Component} from 'f-dom'
 
 class View extends Component {
   render() {
@@ -22,6 +22,6 @@ class View extends Component {
   }
 }
 
-const domNode = createElement(<View />)
+const domNode = mount(<View />)
 document.body.appendChild(domNode)
 ```
