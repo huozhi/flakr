@@ -1,4 +1,4 @@
-import {h, createElement} from '../src'
+import {h, createElement, Component} from '../src'
 
 beforeEach(() => {
   document.body.innerHTML = ''
@@ -38,7 +38,7 @@ test('jsx functional element', () => {
 })
 
 test('jsx class instance element', () => {
-  class View {
+  class View extends Component {
     render() {
       const {text} = this.props
       return (
@@ -50,7 +50,7 @@ test('jsx class instance element', () => {
       )
     }
   }
-  View.prototype.isComponent = true // hack for inhreit from Component
+  // View.prototype.isComponent = true // hack for inhreit from Component
   const label = 'this is class'
   const dom = createElement(<View text={label} />)
   document.body.appendChild(dom)
