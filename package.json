@@ -10,12 +10,8 @@
     "type": "git",
     "url": "git+https://github.com/huozhi/f-dom.git"
   },
-  "author": "",
+  "author": "huozhi",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/huozhi/f-dom/issues"
-  },
-  "homepage": "https://github.com/huozhi/f-dom#readme",
   "babel": {
     "presets": "env",
     "plugins": [
