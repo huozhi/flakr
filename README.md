@@ -1,4 +1,4 @@
-# f-dom
+# hoodie
 
 ## Development
 
@@ -10,7 +10,7 @@ npm test # run jest tests
 ## Usage
 
 ```js
-import {h, mount, Component} from 'f-dom'
+import {h, mount, Component} from 'hoodie'
 
 class View extends Component {
   render() {

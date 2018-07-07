@@ -1,14 +1,15 @@
 {
-  "name": "f-dom",
+  "name": "hoodie",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "rollup -i src/index.js -o dist/hoodie.js -m -f umd -n hoodie",
     "test": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/huozhi/f-dom.git"
+    "url": "git+https://github.com/huozhi/hoodie.git"
   },
   "author": "huozhi",
   "license": "MIT",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-preset-env": "^1.6.1",
-    "jest": "^22.4.2"
+    "jest": "^22.4.2",
+    "rollup": "^0.62.0"
   }
 }
