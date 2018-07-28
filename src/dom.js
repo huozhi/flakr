@@ -1,5 +1,7 @@
 import {isComponentClass} from './component'
 
+const EXPICITY_ATTRS = ['list', 'draggable', 'spellcheck'/*, 'translate'*/]
+
 function mount(vdom) {
   let node
   if (typeof vdom === 'string' || typeof vdom === 'number') {
@@ -33,23 +35,37 @@ function createDOMNode(type, props) {
     node.appendChild(mount(child))
   }
 
-  for (const prop of Object.keys(props)) {
-    const value = props[prop]
-
-    if (prop === 'children' || value == null || value === false) {
-      continue
-    }
-
-    if (prop[0] === 'o' && prop[1] === 'n') {
-      const event = prop.slice(2)
-      node.addEventListener(event, value)
-    } else if (prop in node && prop !== 'list') {
-      node[prop] = value == null ? '' : value
-    } else {
-      node.setAttribute(prop, value)
-    }
+  for (const name in props) {
+    if (name === 'children') continue
+    updateProperty(node, name, null, props[name])
   }
   return node
+}
+
+function updateProperty(node, name, currValue, nextValue) {
+  if (name === 'style') {
+    const styles = Object.assign({}, currValue, nextValue)
+    for (const key in styles) {
+      node[name] = nextValue || ''
+    }
+  } else {
+    if (name[0] === 'o' && name[1] === 'n') {
+      const event = name.slice(2)
+      if (typeof nextValue !== 'function') {
+        node.removeEventListener(event, currValue)
+      } else if (typeof currValue !== 'function') {
+        node.addEventListener(event, nextValue)
+      }
+      return
+    } else if (name in node && !EXPICITY_ATTRS.includes(name)) {
+      node[name] = nextValue == null ? '' : nextValue
+    } else if (nextValue != null && nextValue !== false) {
+      node.setAttribute(name, nextValue)
+    }
+    if (nextValue == null || nextValue === false) {
+      node.removeAttribute(name)
+    }
+  }
 }
 
 export {mount}
