@@ -22,6 +22,15 @@ function mount(vdom) {
   return node
 }
 
+function unmount(container) {
+  const rootEl = container && container.firstChild
+  if (rootEl) {
+    while (container.lastChild) {
+      container.removeChild(container.lastChild)
+    }
+  }
+}
+
 function createTextNode(value) {
   return document.createTextNode(value)
 }
