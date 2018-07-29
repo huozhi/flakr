@@ -2,24 +2,35 @@ import {isComponentClass} from './component'
 
 const EXPICITY_ATTRS = ['list', 'draggable', 'spellcheck'/*, 'translate'*/]
 
-function mount(vdom) {
-  let node
-  if (typeof vdom === 'string' || typeof vdom === 'number') {
-    node = createTextNode(vdom)
-  } else if (typeof vdom === 'object' && vdom !== null) {
+/**
+ * instantiate
+ * @param {object} vdom 
+ * @return {object} element
+ */
+function instantiate(vdom) {
+  if (typeof vdom === 'object' && vdom !== null) {
     const {type, props} = vdom
     if (isComponentClass(type)) {
       const instance = new type(props)
       instance.props = props
-      node = instance.render()
-      return mount(node)
+      instance._construct(vdom)
+      const element = instance.render()
+      return instantiate(element)
     } else if (typeof type === 'function') {
-      return mount(type(props))
+      const element = type(props)
+      return instantiate(element)
     }
-
-    return createDOMNode(type, props)
   }
-  return node
+  return vdom
+}
+
+function mount(element) {
+  if (typeof element === 'string' || typeof element === 'number') {
+    return createTextNode(element)
+  } else if (element != null) {
+    return createDOMNode(element)
+  }
+  return null
 }
 
 function unmount(container) {
@@ -31,18 +42,25 @@ function unmount(container) {
   }
 }
 
+function replace(parent, node, nextNode) {
+  if (parent) {
+    parent.replaceChild(node, nextNode)
+  }
+}
+
 function createTextNode(value) {
   return document.createTextNode(value)
 }
 
-function createDOMNode(type, props) {
+function createDOMNode(element) {
+  const {type, props} = element
   const node = document.createElement(type)
-  if (!Array.isArray(props.children)) {
-    props.children = [props.children]
-  }
-  for (const child of props.children) {
-    node.appendChild(mount(child))
-  }
+  // if (!Array.isArray(props.children)) {
+  //   props.children = [props.children]
+  // }
+  // for (const child of props.children) {
+  //   node.appendChild(createDOMNode(child))
+  // }
 
   for (const name in props) {
     if (name === 'children') continue
@@ -77,4 +95,12 @@ function updateProperty(node, name, currValue, nextValue) {
   }
 }
 
-export {mount}
+function shouldUpdateComponent(element, nextElement) {
+  const type = typeof element
+  const nextType = typeof nextElement
+
+  if (type === 'string') return nextType === 'string'
+  return element.type === nextElement.type
+}
+
+export {instantiate, mount, shouldUpdateComponent}
