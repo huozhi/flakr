@@ -26,7 +26,8 @@ function instantiate(vdom) {
 
 function mount(element) {
   if (typeof element === 'string' || typeof element === 'number') {
-    return createTextNode(element)
+    return element
+    // return createTextNode(element)
   } else if (element != null) {
     return createDOMNode(element)
   }
@@ -63,13 +64,21 @@ function createDOMNode(element) {
   // }
 
   for (const name in props) {
-    if (name === 'children') continue
     updateProperty(node, name, null, props[name])
   }
   return node
 }
 
+function updateProps(node, currProps, nextProps) {
+  const distProps = Object.assign({}, currProps, nextProps)
+  for (const name in distProps) {
+    updateProperty(node, name, currProps[name], props[name])
+  }
+  return node
+}
+
 function updateProperty(node, name, currValue, nextValue) {
+  if (name === 'children') { return }
   if (name === 'style') {
     const styles = Object.assign({}, currValue, nextValue)
     for (const key in styles) {
@@ -99,8 +108,19 @@ function shouldUpdateComponent(element, nextElement) {
   const type = typeof element
   const nextType = typeof nextElement
 
-  if (type === 'string') return nextType === 'string'
-  return element.type === nextElement.type
+  if (type !== 'object') return nextType === type
+  if (element && nextElement) {
+    return element.type === nextElement.type
+  }
+  return element === nextElement
 }
 
-export {instantiate, mount, shouldUpdateComponent}
+function insertChildAfter(node, child, afterNode) {
+  node.insertBefore(child, afterNode ? afterNode.nextSibling : node.firstChild)
+}
+
+function removeChild(node, child) {
+  node.removeChild(child)
+}
+
+export {instantiate, mount, updateProps, insertChildAfter, removeChild, shouldUpdateComponent}

@@ -16,62 +16,51 @@ function receiveComponent(instance, nextElement) {
   instance.receiveComponent(nextElement)
 }
 
-function getHostDOMNode(element) {
-  return element._renderedComponent ? element._renderedComponent._domNode : element._domNode
+function mountChildren() {
+
 }
 
-function updateChildren(
-  prevChildren, // Instances, as created above
-  nextChildren, // Actually elements
-  mountImages,
-  removedChildren,
+function diffChildren(
+  prevChildren, // instances
+  nextChildren, // elements
 ) {
-  // Just make our code a little bit cleaner so we don't have to do null checks.
-  // React skips this to avoid extraneous objects.
-  prevChildren = prevChildren || {}
+  if (!prevChildren || !nextChildren) { return }
 
-  // Loop over our new children and determine what is being updated, removed,
-  // and created.
-  Object.keys(nextChildren).forEach(childKey => {
-    let prevChild = prevChildren[childKey]
-    let prevElement = prevChild && prevChild._currentElement
-    let nextElement = nextChildren[childKey]
+  // const length = Math.max(prevChildren.length, nextChildren.length)
+  const mountImages = {}
+  const removeNodes = {}
+  let truthyChildCount = 0
 
-    // Update
+  for (let i = 0; i < nextChildren.length; i++) {
+    const prevChild = prevChildren[i]
+    const nextChild = nextChildren[i]
+    const prevElement = (prevChild && prevChild._currentElement) || null
+    const nextElement = nextChildren[i]
+
     if (prevChild && shouldUpdateComponent(prevElement, nextElement)) {
-      // Update the existing child with the reconciler. This will recurse
-      // through that component's subtree.
+      nextChildren[i] = prevChild
       receiveComponent(prevChild, nextElement)
-
-      // We no longer need the new instance, so replace it with the old one.
-      nextChildren[childKey] = prevChild
     } else {
-      // Otherwise
-      // Remove the old child. We're replacing.
-      if (prevChild) {
-        // TODO: make this work for composites
-        removedChildren[childKey] = getHostDOMNode(prevChild)
+      if (prevElement) {
+        removeNodes[i] = prevChild._domNode
         unmountComponent(prevChild)
       }
-
-      // Instantiate the new child.
-      let nextChild = instantiate(nextElement)
-      nextChildren[childKey] = nextChild
-
-      // React does this here so that refs resolve in the correct order.
-      mountImages.push(mountComponent(nextChild))
+      const nextChild = instantiate(nextElement)
+      nextChildren[i] = nextChild
+      mountImages[truthyChildCount] = mountComponent(nextChild)
     }
-  })
-
-  // Last but not least, remove the old children which no longer have any presense.
-  Object.keys(prevChildren).forEach(childKey => {
-    // debugger
-    if (!nextChildren.hasOwnProperty(childKey)) {
-      prevChild = prevChildren[childKey]
-      removedChildren[childKey] = getHostDOMNode(prevChild)
+    if (nextChildren[i] != null && nextChildren[i] !== false) {
+      truthyChildCount++
+    }
+  }
+  for (let i = 0; i < prevChildren.length; i++) {
+    if (!nextChildren.hasOwnProperty(prevChildren[i])) {
+      const prevChild = prevChildren[i]
+      removeNodes[i] = prevChild._domNode
       unmountComponent(prevChild)
     }
-  })
+  }
+  return {mountImages, removeNodes}
 }
 
 function unmountChildren(renderedChildren) {
@@ -83,12 +72,12 @@ function unmountChildren(renderedChildren) {
   })
 }
 
-const reconciler = {
+const Reconciler = {
   mountComponent, 
   unmountComponent,
   receiveComponent,
-  updateChildren,
+  diffChildren,
   unmountChildren,
 }
 
-export default reconciler
+export default Reconciler

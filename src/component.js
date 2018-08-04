@@ -1,10 +1,11 @@
-import {mount, instantiate} from './dom'
-import reconcilder from './reconciler'
+import {mount, instantiate, updateProps} from './dom'
+import Reconcilder from './reconciler'
+import {DOMUpdate, flushBatches} from './batch'
 
 function isComponentClass(type) {
   return (
     Boolean(type.prototype) &&
-    Boolean(type.prototype.isComponent)
+    Boolean(type.isComponent)
   )
 }
 
@@ -21,16 +22,17 @@ class DOMComponent {
   mountComponent() {
     const el = mount(this._currentElement)
     this._domNode = el
-
-    
+    this._updateDOMProps({}, this._currentElement.props)
+    this._createChildren(this._currentElement.props)
     return el
   }
 
-  createChildren(children) {
+  _createChildren(children) {
     if (!Array.isArray(children)) {
       children = [children]
     }
-    for (const child of children) {
+    const mountImages = this.mountChildren(children)
+    for (const child of mountImages) {
       node.appendChild(createDOMNode(child))
     }
   }
@@ -49,6 +51,37 @@ class DOMComponent {
     
     return mountImages
   }
+
+  updateComponent(prevElement, nextElement) {
+    this._currentElement = nextElement
+    this._updateDOMProps(prevElement, nextElement)
+    this._updateDOMChildren(prevElement.props, nextElement.props)
+  }
+
+  _updateDOMProps(prevElement, nextElement) {
+    updateProps(this._domNode, prevElement.props, nextElement.props)
+  }
+
+  _updateDOMChildren(prevProps, nextProps) {
+    const updates = []
+    const prevChildren = prevProps.children
+    const nextChildren = nextProps.children
+    if (typeof nextChildren === 'undefined') {
+      return
+    }
+    const updates = []
+    const {mountImages, removeNodes} = Reconcilder.diffChildren(prevChildren, nextChildren)
+    Object.keys(removeNodes).forEach((childIndex) => {
+      updates.push(DOMUpdate.remove(removeNodes[childIndex]))
+    })
+
+    Object.keys(mountImages).forEach((childIndex) => {
+      updates.push(DOMUpdate.insert(mountImages[childIndex]))
+    })
+
+    flushBatches(this._domNode, updates)
+    this._renderedChildren = nextChildren
+  }
 }
 
 class Component {
@@ -57,17 +90,18 @@ class Component {
     this._domNode = null
     this._currentElement = null
     this._renderedElement = null
+    this._renderedChildren = null
   }
 
   receiveComponent(nextElement) {
-    
+    this.updateComponent(this._currentElement, nextElement)
   }
 
-  updateComponent(nextElement) {
-
+  updateComponen(prevElement, nextElement) {
+    
   }
 }
 
-Component.prototype.isComponent = true
+Component.isComponent = true
 
 export {Component, isComponentClass}
