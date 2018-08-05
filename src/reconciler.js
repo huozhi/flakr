@@ -1,4 +1,5 @@
-import {instantiate, shouldUpdateComponent} from './dom'
+import {insertChildAfter, removeChild} from './dom'
+import {instantiate, shouldUpdateComponent} from './element'
 
 function mountComponent(instance) {
   const markup = instance.mountComponent()
@@ -16,11 +17,8 @@ function receiveComponent(instance, nextElement) {
   instance.receiveComponent(nextElement)
 }
 
-function mountChildren() {
-
-}
-
-function diffChildren(
+function updateChildren(
+  parentNode,
   prevChildren, // instances
   nextChildren, // elements
 ) {
@@ -29,11 +27,10 @@ function diffChildren(
   // const length = Math.max(prevChildren.length, nextChildren.length)
   const mountImages = {}
   const removeNodes = {}
-  let truthyChildCount = 0
+  // let truthyChildCount = 0
 
   for (let i = 0; i < nextChildren.length; i++) {
     const prevChild = prevChildren[i]
-    const nextChild = nextChildren[i]
     const prevElement = (prevChild && prevChild._currentElement) || null
     const nextElement = nextChildren[i]
 
@@ -47,7 +44,9 @@ function diffChildren(
       }
       const nextChild = instantiate(nextElement)
       nextChildren[i] = nextChild
-      mountImages[truthyChildCount] = mountComponent(nextChild)
+      const element = mountComponent(nextChild)
+
+
     }
     if (nextChildren[i] != null && nextChildren[i] !== false) {
       truthyChildCount++
@@ -60,7 +59,7 @@ function diffChildren(
       unmountComponent(prevChild)
     }
   }
-  return {mountImages, removeNodes}
+  // return {mountImages, removeNodes}
 }
 
 function unmountChildren(renderedChildren) {
@@ -76,7 +75,7 @@ const Reconciler = {
   mountComponent, 
   unmountComponent,
   receiveComponent,
-  diffChildren,
+  updateChildren,
   unmountChildren,
 }
 

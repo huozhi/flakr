@@ -2,52 +2,7 @@ import {isComponentClass} from './component'
 
 const EXPICITY_ATTRS = ['list', 'draggable', 'spellcheck'/*, 'translate'*/]
 
-/**
- * instantiate
- * @param {object} vdom 
- * @return {object} element
- */
-function instantiate(vdom) {
-  if (typeof vdom === 'object' && vdom !== null) {
-    const {type, props} = vdom
-    if (isComponentClass(type)) {
-      const instance = new type(props)
-      instance.props = props
-      instance._construct(vdom)
-      const element = instance.render()
-      return instantiate(element)
-    } else if (typeof type === 'function') {
-      const element = type(props)
-      return instantiate(element)
-    }
-  }
-  return vdom
-}
 
-function mount(element) {
-  if (typeof element === 'string' || typeof element === 'number') {
-    return element
-    // return createTextNode(element)
-  } else if (element != null) {
-    return createDOMNode(element)
-  }
-  return null
-}
-
-function unmount(container) {
-  const rootEl = container && container.firstChild
-  if (rootEl) {
-    while (container.lastChild) {
-      container.removeChild(container.lastChild)
-    }
-  }
-}
-
-function replace(parent, node, nextNode) {
-  if (parent) {
-    parent.replaceChild(node, nextNode)
-  }
-}
 
 function createTextNode(value) {
   return document.createTextNode(value)
@@ -67,6 +22,15 @@ function createDOMNode(element) {
     updateProperty(node, name, null, props[name])
   }
   return node
+}
+
+function createElement(element) {
+  if (typeof element === 'string' || typeof element === 'number') {
+    return createTextNode(element)
+  } if (element != null && element !== false) {
+    return createDOMNode(element)
+  }
+  return null
 }
 
 function updateProps(node, currProps, nextProps) {
@@ -104,17 +68,6 @@ function updateProperty(node, name, currValue, nextValue) {
   }
 }
 
-function shouldUpdateComponent(element, nextElement) {
-  const type = typeof element
-  const nextType = typeof nextElement
-
-  if (type !== 'object') return nextType === type
-  if (element && nextElement) {
-    return element.type === nextElement.type
-  }
-  return element === nextElement
-}
-
 function insertChildAfter(node, child, afterNode) {
   node.insertBefore(child, afterNode ? afterNode.nextSibling : node.firstChild)
 }
@@ -123,4 +76,26 @@ function removeChild(node, child) {
   node.removeChild(child)
 }
 
-export {instantiate, mount, updateProps, insertChildAfter, removeChild, shouldUpdateComponent}
+function replaceNode(node, replacedNode) {
+  node.parentNode && node.parentNode.replaceChild(replacedNode, node)
+}
+
+function appendChild(node, childNode) {
+  node.appendChild(childNode)
+}
+
+function empty(node) {
+  [].slice.call(node.childNodes).forEach(node.removeChild, node)
+}
+
+const DOM = {
+  empty,
+  appendChild,
+  createElement,
+  updateProps,
+  insertChildAfter,
+  removeChild,
+  replaceNode,
+}
+
+export default DOM

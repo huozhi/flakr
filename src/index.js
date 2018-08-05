@@ -1,3 +1,3 @@
 export {default as h} from './h'
-export {mount} from './dom'
+export {default as Mount} from './mount'
 export {Component} from './component'
