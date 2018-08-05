@@ -50,13 +50,12 @@ class DOMComponent {
   }
 
   unmountComponent() {
-    console.log('this._currentElement', this._currentElement)
-    // this.unmountChildren(this._currentElement.props)
+    this.unmountChildren()
   }
 
   unmountChildren(props) {
-    props.chidlren.forEach(child => {
-      Reconciler.unmountComponent(child)
+    Object.kets(this._renderedChildren).forEach(childKey => {
+      Reconciler.unmountComponent(this._renderedChildren[childKey])
     })
   }
 
@@ -121,9 +120,9 @@ class DOMComponent {
   
     for (let i = 0; i < nextChildren.length; i++) {
       const prevChild = prevChildren[i]
-      const prevElement = (prevChild && prevChild._currentElement) || null
+      // TODO: fix element not instantiate
+      const prevElement = prevChild // (prevChild && prevChild._currentElement)
       const nextElement = nextChildren[i]
-  
       if (prevChild && isSameElement(prevElement, nextElement)) {
         nextChildren[i] = prevChild
         Reconciler.receiveComponent(prevChild, nextElement)
