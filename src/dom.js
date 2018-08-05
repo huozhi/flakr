@@ -36,7 +36,7 @@ function createElement(element) {
 function updateProps(node, currProps, nextProps) {
   const distProps = Object.assign({}, currProps, nextProps)
   for (const name in distProps) {
-    updateProperty(node, name, currProps[name], props[name])
+    updateProperty(node, name, currProps[name], nextProps[name])
   }
   return node
 }

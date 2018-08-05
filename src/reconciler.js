@@ -1,5 +1,4 @@
-import {insertChildAfter, removeChild} from './dom'
-import {instantiate, shouldUpdateComponent} from './element'
+import {instantiate, isSameElement} from './element'
 
 function mountComponent(instance) {
   const markup = instance.mountComponent()
@@ -17,51 +16,6 @@ function receiveComponent(instance, nextElement) {
   instance.receiveComponent(nextElement)
 }
 
-function updateChildren(
-  parentNode,
-  prevChildren, // instances
-  nextChildren, // elements
-) {
-  if (!prevChildren || !nextChildren) { return }
-
-  // const length = Math.max(prevChildren.length, nextChildren.length)
-  const mountImages = {}
-  const removeNodes = {}
-  // let truthyChildCount = 0
-
-  for (let i = 0; i < nextChildren.length; i++) {
-    const prevChild = prevChildren[i]
-    const prevElement = (prevChild && prevChild._currentElement) || null
-    const nextElement = nextChildren[i]
-
-    if (prevChild && shouldUpdateComponent(prevElement, nextElement)) {
-      nextChildren[i] = prevChild
-      receiveComponent(prevChild, nextElement)
-    } else {
-      if (prevElement) {
-        removeNodes[i] = prevChild._domNode
-        unmountComponent(prevChild)
-      }
-      const nextChild = instantiate(nextElement)
-      nextChildren[i] = nextChild
-      const element = mountComponent(nextChild)
-
-
-    }
-    if (nextChildren[i] != null && nextChildren[i] !== false) {
-      truthyChildCount++
-    }
-  }
-  for (let i = 0; i < prevChildren.length; i++) {
-    if (!nextChildren.hasOwnProperty(prevChildren[i])) {
-      const prevChild = prevChildren[i]
-      removeNodes[i] = prevChild._domNode
-      unmountComponent(prevChild)
-    }
-  }
-  // return {mountImages, removeNodes}
-}
-
 function unmountChildren(renderedChildren) {
   if (!renderedChildren) {
     return
@@ -75,7 +29,6 @@ const Reconciler = {
   mountComponent, 
   unmountComponent,
   receiveComponent,
-  updateChildren,
   unmountChildren,
 }
 

@@ -24,7 +24,7 @@ function instantiate(element) {
   return instance
 }
 
-function shouldUpdateComponent(element, nextElement) {
+function isSameElement(element, nextElement) {
   const type = typeof element
   const nextType = typeof nextElement
 
@@ -35,4 +35,4 @@ function shouldUpdateComponent(element, nextElement) {
   return element === nextElement
 }
 
-export {instantiate, shouldUpdateComponent}
+export {instantiate, isSameElement}

@@ -1,7 +1,6 @@
 import DOM from './dom'
-import {instantiate, shouldUpdateComponent} from './element'
+import {instantiate, isSameElement} from './element'
 import Reconciler from './reconciler'
-// import {DOMUpdate, flushBatches} from './batch'
 
 function isComponentClass(type) {
   return (
@@ -51,13 +50,26 @@ class DOMComponent {
   }
 
   unmountComponent() {
-    this.unmountChildren()
+    console.log('this._currentElement', this._currentElement)
+    // this.unmountChildren(this._currentElement.props)
+  }
+
+  unmountChildren(props) {
+    props.chidlren.forEach(child => {
+      Reconciler.unmountComponent(child)
+    })
+  }
+
+  receiveComponent(nextElement) {
+    this._currentElement = nextElement
+    this.updateComponent(this._currentElement, nextElement)
   }
 
   mountChildren(children) {
     this._renderedChildren = {}
     const mountImages = children.map((child, index) => {
       const element = instantiate(child)
+      element._mountIndex = index
       this._renderedChildren[index] = element
       return Reconciler.mountComponent(element)
     })    
@@ -92,18 +104,87 @@ class DOMComponent {
     if (typeof nextChildren === 'undefined') {
       return
     }
-    Reconciler.updateChildren(this._domNode, prevChildren, nextChildren)
-    // const {mountImages, removeNodes} = 
-    // Object.keys(removeNodes).forEach((childIndex) => {
-    //   updates.push(DOMUpdate.remove(removeNodes[childIndex]))
-    // })
+    this.updateChildren(this._domNode, prevChildren, nextChildren)
+  }
 
-    // Object.keys(mountImages).forEach((childIndex) => {
-    //   updates.push(DOMUpdate.insert(mountImages[childIndex]))
-    // })
+  updateChildren(
+    parentNode,
+    prevChildren, // instances
+    nextChildren, // elements
+  ) {
+    if (!prevChildren || !nextChildren) { return }
+  
+    // const length = Math.max(prevChildren.length, nextChildren.length)
+    const mountImages = []
+    const removedNodes = {}
+    // let truthyChildCount = 0
+  
+    for (let i = 0; i < nextChildren.length; i++) {
+      const prevChild = prevChildren[i]
+      const prevElement = (prevChild && prevChild._currentElement) || null
+      const nextElement = nextChildren[i]
+  
+      if (prevChild && isSameElement(prevElement, nextElement)) {
+        nextChildren[i] = prevChild
+        Reconciler.receiveComponent(prevChild, nextElement)
+      } else {
+        if (prevElement) {
+          removedNodes[i] = prevChild._domNode
+          Reconciler.unmountComponent(prevChild)
+        }
+        const nextChild = instantiate(nextElement)
+        nextChildren[i] = nextChild
+        mountImages.push(Reconciler.mountComponent(nextChild))
+  
+  
+      }
+      // if (nextChildren[i] != null && nextChildren[i] !== false) {
+      //   truthyChildCount++
+      // }
+    }
+    for (let i = 0; i < prevChildren.length; i++) {
+      if (!nextChildren.hasOwnProperty(prevChildren[i])) {
+        const prevChild = prevChildren[i]
+        removedNodes[i] = prevChild._domNode
+        Reconciler.unmountComponent(prevChild)
+      }
+    }
+  
+    let lastIndex = 0
+    let nextMountIndex = 0
+    let lastPlacedNode = null
+  
+    Object.keys(nextChildren).forEach((childKey, nextIndex) => {
+      let prevChild = prevChildren[childKey]
+      let nextChild = nextChildren[childKey]
+  
+      if (prevChild === nextChild) {
+        if (prevChild._mountIndex < lastIndex) {
+          DOM.insertChildAfter(parentNode, parentNode.childNodes[prevChild._mountIndex], lastIndex)
+        }
+        lastIndex = Math.max(prevChild._mountIndex, lastIndex)
+        prevChild._mountIndex = nextIndex
+      } else {
+        if (prevChild) {
+          lastIndex = Math.max(prevChild._mountIndex, lastIndex)
+        }
+  
+        nextChild._mountIndex = nextIndex
+        DOM.insertChildAfter(parentNode, mountImages[nextMountIndex], lastPlacedNode)
+        nextMountIndex++
+      }
+      lastPlacedNode = nextChild._domNode
+    })
+  
+    Object.keys(removedNodes).forEach(childKey => {
+      try {
+        DOM.removeChild(parentNode, removedNodes[childKey])
+      } catch (e) {
+        console.error(e)
+        console.log('ERROR remove', parentNode, removedNodes[childKey])
+      }
 
-    // flushBatches(this._domNode, updates)
-    // this._renderedChildren = nextChildren
+    })
   }
 }
 
@@ -134,13 +215,13 @@ class Component {
     this.updateComponent(this._currentElement, nextElement)
   }
 
-  updateComponen(prevElement, nextElement) {
+  updateComponent(prevElement, nextElement) {
     this.props = nextElement.props
 
     const prevRenderedElement = this._renderedComponent._currentElement
     const nextRenderedElement = this.render()
 
-    if (shouldUpdateComponent(prevRenderedElement, nextRenderedElement)) {
+    if (isSameElement(prevRenderedElement, nextRenderedElement)) {
       Reconciler.receiveComponent(this._renderedComponent, nextRenderedElement)
     } else {
       Reconciler.unmountComponent(this._renderedComponent)

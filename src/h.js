@@ -6,6 +6,7 @@ function h(type, props, ...args) {
   while (args.length) {
     node = args.pop()
     if (Array.isArray(node)) {
+      // TODO: not flattern children
       Array.prototype.push.apply(children, node)
     } else if (node != null && typeof node !== 'boolean') {
       if (typeof node === 'number') {
