@@ -49,15 +49,7 @@ class DOMComponent {
   }
 
   unmountComponent() {
-    this.unmountChildren()
     DOM.removeChild(this._domNode.parentNode, this._domNode)
-  }
-
-  unmountChildren(props) {
-    Object.keys(this._renderedChildren).forEach(childKey => {
-      const child = this._renderedChildren[childKey]
-      if (utils.isTruthy(child)) Reconciler.unmountComponent(child)
-    })
   }
 
   receiveComponent(nextElement) {
@@ -163,7 +155,7 @@ class Component {
     this.props = props
     this._domNode = null
     this._currentElement = null
-    this._renderedElement = null
+    this._renderedComponent = null
     this._renderedChildren = null
   }
 
@@ -180,6 +172,19 @@ class Component {
 
     return markup
   }
+
+  unmountComponent() {
+    this.unmountChildren()
+    Reconciler.unmountComponent(this._renderedComponent)
+  }
+
+  unmountChildren(props) {
+    Object.keys(this._renderedChildren || {}).forEach(childKey => {
+      const child = this._renderedChildren[childKey]
+      if (utils.isTruthy(child)) Reconciler.unmountComponent(child)
+    })
+  }
+
 
   receiveComponent(nextElement) {
     this.updateComponent(this._currentElement, nextElement)

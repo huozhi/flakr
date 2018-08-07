@@ -1,24 +1,20 @@
-function h(type, props, ...args) {
-  const children = []
+function h(type, props = {}, ...args) {
+  props = props || {}
+  const children = props.children || []
   let node
 
   // args is jsx children
   while (args.length) {
     node = args.pop()
-    let element = node
     if (Array.isArray(node)) {
-
       // TODO: not flattern children
-      // Array.prototype.push.apply(children, node)
-      element = node.map((childArgs) => h(childArgs))
+      Array.prototype.push.apply(children, node)
     } else if (node != null && typeof node !== 'boolean') {
-      element = node // instantiate(node)
+      children.push(node)
     }
-    children.push(element)
   }
-  props = props || {}
-  props.children = children
 
+  props.children = children
   return {type, props}
 }
 

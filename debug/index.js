@@ -13,11 +13,24 @@ class View extends Component {
             visible
           </div>
         }
+        <MemeberHub count={Math.ceil(Math.random() * 10)} />
       </div>
     )
   }
 }
-// View.prototype.isComponent = true // hack for inhreit from Component
+
+class MemeberHub extends Component {
+  render() {
+    const {count} = this.props
+    const data = Array(count).fill().map((_, i) => i)
+    return (
+      <div className="hub">
+        {data.map(v => <span>{v}</span>)}
+      </div>
+    )
+  }
+}
+
 const root = document.querySelector('#root')
 const label = 'this is class'
 let visible = false
