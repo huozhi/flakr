@@ -103,16 +103,12 @@ class DOMComponent {
     nextChildren, // elements
   ) {
     if (!prevChildren || !nextChildren) { return }
-    const mountImages = []
-    const removedNodes = {}
+    const mountUpdates = []
+    const removeUpdates = []
     let domIndex = 0
 
     for (let i = 0; i < nextChildren.length; i++) {
       const prevChild = prevChildren[i]
-      if (utils.isTruthy(prevChild)) {
-        domIndex++
-      }
-      // TODO: fix element not instantiate
       const prevElement = (prevChild && prevChild._currentElement)
       const nextElement = nextChildren[i]
       if (prevChild && isSameElement(prevElement, nextElement)) {
@@ -120,30 +116,36 @@ class DOMComponent {
         Reconciler.receiveComponent(prevChild, nextElement)
       } else {
         if (prevElement) {
-          removedNodes[i] = prevChild._domNode
-          Reconciler.unmountComponent(prevChild)
+          removeUpdates.push(prevChild)
         }
         const nextChild = instantiate(nextElement)
         nextChildren[i] = nextChild
         if (utils.isTruthy(nextChild)) {
           const nextChildNode = Reconciler.mountComponent(nextChild)
-          mountImages.push({pos: domIndex, node: nextChildNode})
+          mountUpdates.push({pos: domIndex, node: nextChildNode})
         }
       }
-
+      if (utils.isTruthy(prevChild)) {
+        domIndex++
+      }
     }
+
     for (let i = 0; i < prevChildren.length; i++) {
       if (!nextChildren.hasOwnProperty(i)) {
         const prevChild = prevChildren[i]
         if (prevChild) {
-          removedNodes[i] = prevChild._domNode
-          Reconciler.unmountComponent(prevChild)
+          removeUpdates.push(prevChild)
         }
       }
     }
-    for (const mountImage of mountImages) {
+
+    // flush updates
+    for (const mountImage of mountUpdates) {
       const {pos, node} = mountImage
       DOM.insertChildAfter(parentNode, node, parentNode.childNodes[pos])
+    }
+    for (const child of removeUpdates) {
+      Reconciler.unmountComponent(child)
     }
 
     this._renderedChildren = nextChildren
@@ -179,7 +181,8 @@ class Component {
   }
 
   unmountChildren(props) {
-    Object.keys(this._renderedChildren || {}).forEach(childKey => {
+    if (!this._renderedChildren) { return }
+    Object.keys(this._renderedChildren).forEach(childKey => {
       const child = this._renderedChildren[childKey]
       if (utils.isTruthy(child)) Reconciler.unmountComponent(child)
     })

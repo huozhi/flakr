@@ -14,20 +14,10 @@ function receiveComponent(instance, nextElement) {
   instance.receiveComponent(nextElement)
 }
 
-function unmountChildren(renderedChildren) {
-  if (!renderedChildren) {
-    return
-  }
-  Object.keys(renderedChildren).forEach(childKey => {
-    unmountComponent(renderedChildren[childKey])
-  })
-}
-
 const Reconciler = {
   mountComponent,
   unmountComponent,
   receiveComponent,
-  unmountChildren,
 }
 
 export default Reconciler
