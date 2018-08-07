@@ -14,12 +14,7 @@ function mount(element, container) {
   const renderedNode = Reconciler.mountComponent(component)
   DOM.empty(container)
   DOM.appendChild(container, renderedNode)
-  // if (typeof element === 'string' || typeof element === 'number') {
-  //   return element
-  //   // return createTextNode(element)
-  // } else if (element != null) {
-  //   return createDOMNode(element)
-  // }
+
   rootId++
 }
 
@@ -41,10 +36,7 @@ function render(element, container) {
   if (container.dataset[ROOT_KEY]) {
     const id = container.dataset[ROOT_KEY]
     const instance = instanceMap[id]
-    console.log('next element', element)
-    Reconciler.receiveComponent(instance, instantiate(element))
-    // TODO: update node
-    // return update(element, container)
+    Reconciler.receiveComponent(instance, element)
   } else {
     return mount(element, container)
   }

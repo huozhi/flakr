@@ -5,7 +5,7 @@ class View extends Component {
     const {text, visible} = this.props
     return (
       <div>
-        <button className="btn" onclick={() => alert('hello cls')}>
+        <button className="btn" onclick={() => console.log('hello cls')}>
           {text}
         </button>
         {visible &&

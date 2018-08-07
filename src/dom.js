@@ -1,14 +1,16 @@
-import {isComponentClass} from './component'
+import utils from './utils'
 
 const EXPICITY_ATTRS = ['list', 'draggable', 'spellcheck'/*, 'translate'*/]
 
-
-
-function createTextNode(value) {
+function createDOMTextElement(value) {
+  if (!utils.isTruthy(value)) {
+    // placeholder
+    return document.createComment(value)
+  }
   return document.createTextNode(value)
 }
 
-function createDOMNode(element) {
+function createDOMElement(element) {
   const {type, props} = element
   const node = document.createElement(type)
   // if (!Array.isArray(props.children)) {
@@ -24,14 +26,14 @@ function createDOMNode(element) {
   return node
 }
 
-function createElement(element) {
-  if (typeof element === 'string' || typeof element === 'number') {
-    return createTextNode(element)
-  } if (element != null && element !== false) {
-    return createDOMNode(element)
-  }
-  return null
-}
+// function createElement(element) {
+//   if (typeof element === 'string' || typeof element === 'number') {
+//     return createTextNode(element)
+//   } if (element != null && element !== false) {
+//     return createDOMNode(element)
+//   }
+//   return null
+// }
 
 function updateProps(node, currProps, nextProps) {
   const distProps = Object.assign({}, currProps, nextProps)
@@ -62,7 +64,7 @@ function updateProperty(node, name, currValue, nextValue) {
     } else if (nextValue != null && nextValue !== false) {
       node.setAttribute(name, nextValue)
     }
-    if (nextValue == null || nextValue === false) {
+    if (!utils.isTruthy(nextValue)) {
       node.removeAttribute(name)
     }
   }
@@ -77,7 +79,7 @@ function removeChild(node, child) {
 }
 
 function replaceNode(node, replacedNode) {
-  node.parentNode && node.parentNode.replaceChild(replacedNode, node)
+  node.parentNode.replaceChild(replacedNode, node)
 }
 
 function appendChild(node, childNode) {
@@ -91,7 +93,9 @@ function empty(node) {
 const DOM = {
   empty,
   appendChild,
-  createElement,
+  // createElement,
+  createDOMElement,
+  createDOMTextElement,
   updateProps,
   insertChildAfter,
   removeChild,

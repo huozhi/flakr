@@ -1,6 +1,7 @@
 import DOM from './dom'
 import {instantiate, isSameElement} from './element'
 import Reconciler from './reconciler'
+import utils from './utils'
 
 function isComponentClass(type) {
   return (
@@ -9,29 +10,30 @@ function isComponentClass(type) {
   )
 }
 
-function getKey(element) {
-  return (element && element.key) ? element.key : ''
-}
-
 class DOMTextComponent {
   constructor(element) {
     this._currentElement = element
   }
 
   mountComponent() {
-    const text = DOM.createElement(this._currentElement)
+    console.log('text.mount', this._currentElement)
+    const text = DOM.createDOMTextElement(this._currentElement)
     this._domNode = text
     return text
   }
 
   receiveComponent(nextElement) {
-    if (nextElement !== this._currentElement) {
-      DOM.replaceNode(this._domNode, DOM.createElement(nextElement))
+    console.log('text.receiveComponent', this._currentElement, nextElement)
+    if (nextElement._currentElement !== this._currentElement) {
+      const nextText = DOM.createDOMTextElement(nextElement._currentElement)
+      DOM.replaceNode(this._domNode, nextText)
+      this._domNode = nextText
     }
   }
 
   unmountComponent() {
-    // TODO: unmount text
+    console.log('text.unmount', this._domNode)
+    DOM.removeChild(this._domNode.parentNode, this._domNode)
   }
 }
 
@@ -42,7 +44,7 @@ class DOMComponent {
   }
 
   mountComponent() {
-    const el = DOM.createElement(this._currentElement)
+    const el = DOM.createDOMElement(this._currentElement)
     this._domNode = el
     this._updateDOMProps({}, this._currentElement.props)
     this._createChildren(this._currentElement.props)
@@ -51,32 +53,32 @@ class DOMComponent {
 
   unmountComponent() {
     this.unmountChildren()
+    DOM.removeChild(this._domNode.parentNode, this._domNode)
   }
 
   unmountChildren(props) {
-    Object.kets(this._renderedChildren).forEach(childKey => {
-      Reconciler.unmountComponent(this._renderedChildren[childKey])
+    Object.keys(this._renderedChildren).forEach(childKey => {
+      const child = this._renderedChildren[childKey]
+      if (utils.isTruthy(child)) Reconciler.unmountComponent(child)
     })
   }
 
   receiveComponent(nextElement) {
-    this._currentElement = nextElement
     this.updateComponent(this._currentElement, nextElement)
+    this._currentElement = nextElement
   }
 
   mountChildren(children) {
     this._renderedChildren = {}
-    const mountImages = children.map((child, index) => {
+    const mountImages = children.filter(utils.isTruthy).map((child, index) => {
       const element = instantiate(child)
-      element._mountIndex = index
       this._renderedChildren[index] = element
       return Reconciler.mountComponent(element)
-    })    
+    })
     return mountImages
   }
 
   updateComponent(prevElement, nextElement) {
-    this._currentElement = nextElement
     this._updateDOMProps(prevElement, nextElement)
     this._updateDOMChildren(prevElement.props, nextElement.props)
   }
@@ -97,8 +99,8 @@ class DOMComponent {
   }
 
   _updateDOMChildren(prevProps, nextProps) {
-    const updates = []
-    const prevChildren = prevProps.children
+    const prevChildren = this._renderedChildren
+    // prevProps.children
     const nextChildren = nextProps.children
     if (typeof nextChildren === 'undefined') {
       return
@@ -112,16 +114,17 @@ class DOMComponent {
     nextChildren, // elements
   ) {
     if (!prevChildren || !nextChildren) { return }
-  
-    // const length = Math.max(prevChildren.length, nextChildren.length)
     const mountImages = []
     const removedNodes = {}
-    // let truthyChildCount = 0
-  
+    let domIndex = 0
+
     for (let i = 0; i < nextChildren.length; i++) {
       const prevChild = prevChildren[i]
+      if (utils.isTruthy(prevChild)) {
+        domIndex++
+      }
       // TODO: fix element not instantiate
-      const prevElement = prevChild // (prevChild && prevChild._currentElement)
+      const prevElement = (prevChild && prevChild._currentElement)
       const nextElement = nextChildren[i]
       if (prevChild && isSameElement(prevElement, nextElement)) {
         nextChildren[i] = prevChild
@@ -133,57 +136,28 @@ class DOMComponent {
         }
         const nextChild = instantiate(nextElement)
         nextChildren[i] = nextChild
-        mountImages.push(Reconciler.mountComponent(nextChild))
-  
-  
-      }
-      // if (nextChildren[i] != null && nextChildren[i] !== false) {
-      //   truthyChildCount++
-      // }
-    }
-    for (let i = 0; i < prevChildren.length; i++) {
-      if (!nextChildren.hasOwnProperty(prevChildren[i])) {
-        const prevChild = prevChildren[i]
-        removedNodes[i] = prevChild._domNode
-        Reconciler.unmountComponent(prevChild)
-      }
-    }
-  
-    let lastIndex = 0
-    let nextMountIndex = 0
-    let lastPlacedNode = null
-  
-    Object.keys(nextChildren).forEach((childKey, nextIndex) => {
-      let prevChild = prevChildren[childKey]
-      let nextChild = nextChildren[childKey]
-  
-      if (prevChild === nextChild) {
-        if (prevChild._mountIndex < lastIndex) {
-          DOM.insertChildAfter(parentNode, parentNode.childNodes[prevChild._mountIndex], lastIndex)
+        if (utils.isTruthy(nextChild)) {
+          const nextChildNode = Reconciler.mountComponent(nextChild)
+          mountImages.push({pos: domIndex, node: nextChildNode})
         }
-        lastIndex = Math.max(prevChild._mountIndex, lastIndex)
-        prevChild._mountIndex = nextIndex
-      } else {
-        if (prevChild) {
-          lastIndex = Math.max(prevChild._mountIndex, lastIndex)
-        }
-  
-        nextChild._mountIndex = nextIndex
-        DOM.insertChildAfter(parentNode, mountImages[nextMountIndex], lastPlacedNode)
-        nextMountIndex++
-      }
-      lastPlacedNode = nextChild._domNode
-    })
-  
-    Object.keys(removedNodes).forEach(childKey => {
-      try {
-        DOM.removeChild(parentNode, removedNodes[childKey])
-      } catch (e) {
-        console.error(e)
-        console.log('ERROR remove', parentNode, removedNodes[childKey])
       }
 
-    })
+    }
+    for (let i = 0; i < prevChildren.length; i++) {
+      if (!nextChildren.hasOwnProperty(i)) {
+        const prevChild = prevChildren[i]
+        if (prevChild) {
+          removedNodes[i] = prevChild._domNode
+          Reconciler.unmountComponent(prevChild)
+        }
+      }
+    }
+    for (const mountImage of mountImages) {
+      const {pos, node} = mountImage
+      DOM.insertChildAfter(parentNode, node, parentNode.childNodes[pos])
+    }
+
+    this._renderedChildren = nextChildren
   }
 }
 
@@ -202,16 +176,17 @@ class Component {
 
   mountComponent() {
     const renderedElement = this.render()
+    this.construct(renderedElement)
     const renderedComponent = instantiate(renderedElement)
     const markup = Reconciler.mountComponent(renderedComponent)
     this._renderedComponent = renderedComponent
-    
+
     return markup
   }
 
   receiveComponent(nextElement) {
-    this._currentElement = nextElement
     this.updateComponent(this._currentElement, nextElement)
+    this._currentElement = nextElement
   }
 
   updateComponent(prevElement, nextElement) {
@@ -221,7 +196,8 @@ class Component {
     const nextRenderedElement = this.render()
 
     if (isSameElement(prevRenderedElement, nextRenderedElement)) {
-      Reconciler.receiveComponent(this._renderedComponent, nextRenderedElement)
+      const nextComponent = instantiate(nextRenderedElement)
+      Reconciler.receiveComponent(this._renderedComponent, nextComponent)
     } else {
       Reconciler.unmountComponent(this._renderedComponent)
       const nextRenderedComponent = instantiate(nextRenderedElement)

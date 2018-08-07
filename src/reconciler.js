@@ -1,5 +1,3 @@
-import {instantiate, isSameElement} from './element'
-
 function mountComponent(instance) {
   const markup = instance.mountComponent()
   return markup
@@ -26,7 +24,7 @@ function unmountChildren(renderedChildren) {
 }
 
 const Reconciler = {
-  mountComponent, 
+  mountComponent,
   unmountComponent,
   receiveComponent,
   unmountChildren,
