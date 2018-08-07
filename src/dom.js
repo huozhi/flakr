@@ -13,27 +13,12 @@ function createDOMTextElement(value) {
 function createDOMElement(element) {
   const {type, props} = element
   const node = document.createElement(type)
-  // if (!Array.isArray(props.children)) {
-  //   props.children = [props.children]
-  // }
-  // for (const child of props.children) {
-  //   node.appendChild(createDOMNode(child))
-  // }
 
   for (const name in props) {
     updateProperty(node, name, null, props[name])
   }
   return node
 }
-
-// function createElement(element) {
-//   if (typeof element === 'string' || typeof element === 'number') {
-//     return createTextNode(element)
-//   } if (element != null && element !== false) {
-//     return createDOMNode(element)
-//   }
-//   return null
-// }
 
 function updateProps(node, currProps, nextProps) {
   const distProps = Object.assign({}, currProps, nextProps)
@@ -93,7 +78,6 @@ function empty(node) {
 const DOM = {
   empty,
   appendChild,
-  // createElement,
   createDOMElement,
   createDOMTextElement,
   updateProps,
