@@ -5,14 +5,16 @@ function h(type, props, ...args) {
   // args is jsx children
   while (args.length) {
     node = args.pop()
+    let element = node
     if (Array.isArray(node)) {
-      Array.prototype.push.apply(children, node)
+
+      // TODO: not flattern children
+      // Array.prototype.push.apply(children, node)
+      element = node.map((childArgs) => h(childArgs))
     } else if (node != null && typeof node !== 'boolean') {
-      if (typeof node === 'number') {
-        node = node + ''
-      }
-      children.unshift(node)
+      element = node // instantiate(node)
     }
+    children.push(element)
   }
   props = props || {}
   props.children = children

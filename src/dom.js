@@ -1,48 +1,35 @@
-import {isComponentClass} from './component'
+import utils from './utils'
 
 const EXPICITY_ATTRS = ['list', 'draggable', 'spellcheck'/*, 'translate'*/]
 
-function mount(vdom) {
-  let node
-  if (typeof vdom === 'string' || typeof vdom === 'number') {
-    node = createTextNode(vdom)
-  } else if (typeof vdom === 'object' && vdom !== null) {
-    const {type, props} = vdom
-    if (isComponentClass(type)) {
-      const instance = new type(props)
-      instance.props = props
-      node = instance.render()
-      return mount(node)
-    } else if (typeof type === 'function') {
-      return mount(type(props))
-    }
-
-    return createDOMNode(type, props)
+function createDOMTextElement(value) {
+  if (!utils.isTruthy(value)) {
+    // placeholder
+    return document.createComment(value)
   }
-  return node
-}
-
-function createTextNode(value) {
   return document.createTextNode(value)
 }
 
-function createDOMNode(type, props) {
+function createDOMElement(element) {
+  const {type, props} = element
   const node = document.createElement(type)
-  if (!Array.isArray(props.children)) {
-    props.children = [props.children]
-  }
-  for (const child of props.children) {
-    node.appendChild(mount(child))
-  }
 
   for (const name in props) {
-    if (name === 'children') continue
     updateProperty(node, name, null, props[name])
   }
   return node
 }
 
+function updateProps(node, currProps, nextProps) {
+  const distProps = Object.assign({}, currProps, nextProps)
+  for (const name in distProps) {
+    updateProperty(node, name, currProps[name], nextProps[name])
+  }
+  return node
+}
+
 function updateProperty(node, name, currValue, nextValue) {
+  if (name === 'children') { return }
   if (name === 'style') {
     const styles = Object.assign({}, currValue, nextValue)
     for (const key in styles) {
@@ -62,10 +49,41 @@ function updateProperty(node, name, currValue, nextValue) {
     } else if (nextValue != null && nextValue !== false) {
       node.setAttribute(name, nextValue)
     }
-    if (nextValue == null || nextValue === false) {
+    if (!utils.isTruthy(nextValue)) {
       node.removeAttribute(name)
     }
   }
 }
 
-export {mount}
+function insertChildAfter(node, child, afterNode) {
+  node.insertBefore(child, afterNode ? afterNode.nextSibling : node.firstChild)
+}
+
+function removeChild(node, child) {
+  node.removeChild(child)
+}
+
+function replaceNode(node, replacedNode) {
+  node.parentNode.replaceChild(replacedNode, node)
+}
+
+function appendChild(node, childNode) {
+  node.appendChild(childNode)
+}
+
+function empty(node) {
+  [].slice.call(node.childNodes).forEach(node.removeChild, node)
+}
+
+const DOM = {
+  empty,
+  appendChild,
+  createDOMElement,
+  createDOMTextElement,
+  updateProps,
+  insertChildAfter,
+  removeChild,
+  replaceNode,
+}
+
+export default DOM
