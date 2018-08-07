@@ -1,6 +1,6 @@
-import {h, Mount, Component} from '../src'
+import Hoodie, {h} from '../src'
 
-class View extends Component {
+class View extends Hoodie.Component {
   render() {
     const {text, visible} = this.props
     return (
@@ -19,7 +19,7 @@ class View extends Component {
   }
 }
 
-class MemeberHub extends Component {
+class MemeberHub extends Hoodie.Component {
   render() {
     const {count} = this.props
     const data = Array(count).fill().map((_, i) => i)
@@ -35,11 +35,11 @@ const root = document.querySelector('#root')
 const label = 'this is class'
 let visible = false
 let element = <View text={label} visible={visible} />
-Mount.render(element, root)
+Hoodie.render(element, root)
 
 document.addEventListener('click', () => {
   visible = !visible
   element = <View text={label} visible={visible} />
-  Mount.render(element, root)
+  Hoodie.render(element, root)
 })
 
