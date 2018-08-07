@@ -9,7 +9,7 @@ function unmountComponent(instance) {
 
 function receiveComponent(instance, nextElement) {
   const currentElement = instance._currentElement
-  if (currentElement === nextElement) return
+  if (currentElement === nextElement) { return }
 
   instance.receiveComponent(nextElement)
 }

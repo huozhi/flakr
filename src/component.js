@@ -16,23 +16,20 @@ class DOMTextComponent {
   }
 
   mountComponent() {
-    console.log('text.mount', this._currentElement)
     const text = DOM.createDOMTextElement(this._currentElement)
     this._domNode = text
     return text
   }
 
   receiveComponent(nextElement) {
-    console.log('text.receiveComponent', this._currentElement, nextElement)
-    if (nextElement._currentElement !== this._currentElement) {
-      const nextText = DOM.createDOMTextElement(nextElement._currentElement)
+    if (nextElement !== this._currentElement) {
+      const nextText = DOM.createDOMTextElement(nextElement)
       DOM.replaceNode(this._domNode, nextText)
       this._domNode = nextText
     }
   }
 
   unmountComponent() {
-    console.log('text.unmount', this._domNode)
     DOM.removeChild(this._domNode.parentNode, this._domNode)
   }
 }
