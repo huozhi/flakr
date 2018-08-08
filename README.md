@@ -10,18 +10,27 @@ npm test # run jest tests
 ## Usage
 
 ```js
-import {h, mount, Component} from 'hoodie'
+import Hoodie, {h} from 'hoodie'
 
-class View extends Component {
+class View extends Hoodie.Component {
   render() {
+    const {text, visible} = this.props
     return (
       <div>
-        <button onclick={() => alert('ok')}>click</button>
+        <button className="btn" onclick={() => console.log('hello cls')}>
+          {text}
+        </button>
+        {visible &&
+          <div>
+            visible
+          </div>
+        }
       </div>
     )
   }
 }
 
-const domNode = mount(<View />)
-document.body.appendChild(domNode)
+const root = document.querySelector('#root')
+const label = 'this is class'
+Hoodie.render(<View text={label} visible={true} />, root)
 ```
