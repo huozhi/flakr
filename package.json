@@ -24,6 +24,9 @@
       ]
     ]
   },
+  "jest": {
+    "testURL": "http://localhost/"
+  },
   "devDependencies": {
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-preset-env": "^1.6.1",
