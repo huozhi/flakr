@@ -1,11 +1,11 @@
-import Hoodie, {h} from '../src'
+import {h, render, Component} from '../src'
 
 beforeEach(() => {
   document.body.innerHTML = '<div id="root"></div>'
 })
 
 test('jsx class instance element', () => {
-  class View extends Hoodie.Component {
+  class View extends Component {
     render() {
       const {text} = this.props
       return (
@@ -20,7 +20,7 @@ test('jsx class instance element', () => {
   const label = 'this is class'
   const element = <View text={label} />
   const root = document.querySelector('#root')
-  Hoodie.render(element, root)
+  render(element, root)
 
   const btn = document.querySelector('button')
   expect(btn.className).toBe('btn')

@@ -10,9 +10,9 @@ npm test # run jest tests
 ## Usage
 
 ```js
-import Hoodie, {h} from 'hoodie'
+import {h, render, Component} from 'hoodie'
 
-class View extends Hoodie.Component {
+class View extends Component {
   render() {
     const {text, visible} = this.props
     return (
@@ -32,5 +32,5 @@ class View extends Hoodie.Component {
 
 const root = document.querySelector('#root')
 const label = 'this is class'
-Hoodie.render(<View text={label} visible={true} />, root)
+render(<View text={label} visible={true} />, root)
 ```

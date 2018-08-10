@@ -1,10 +1,7 @@
-import {Component} from './component'
 import Mount from './mount'
 
-export default {
-  render: Mount.render,
-  unmount: Mount.unmount,
-  Component: Component,
-}
+const {render, unmount} = Mount
 
 export {default as h} from './h'
+export {Component} from './component'
+export {render, unmount}
