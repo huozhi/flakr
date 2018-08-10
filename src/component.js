@@ -3,13 +3,6 @@ import {instantiate, isSameElement} from './element'
 import Reconciler from './reconciler'
 import utils from './utils'
 
-function isComponentClass(type) {
-  return (
-    Boolean(type.prototype) &&
-    Boolean(type.prototype.isComponent)
-  )
-}
-
 class DOMTextComponent {
   constructor(element) {
     this._currentElement = element
@@ -215,4 +208,4 @@ class Component {
 
 Component.prototype.isComponent = true
 
-export {Component, DOMComponent, DOMTextComponent, isComponentClass}
+export {Component, DOMComponent, DOMTextComponent}

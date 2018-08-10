@@ -1,5 +1,11 @@
 import {DOMComponent, DOMTextComponent} from './component'
-import {isComponentClass} from './component'
+
+function isComponentClass(type) {
+  return (
+    Boolean(type.prototype) &&
+    Boolean(type.prototype.isComponent)
+  )
+}
 
 function instantiate(vdom) {
   let instance = null
