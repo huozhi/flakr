@@ -2,10 +2,17 @@
   "name": "flakr",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "*.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "build": "rollup -i src/index.js -o dist/flakr.js -m -f umd -n flakr",
-    "test": "jest"
+    "test": "jest",
+    "clean": "rm -rf dist/*",
+    "build": "rollup -i src/index.js -o dist/flakr.js -f umd -n flakr",
+    "prepublishOnly": "npm test && npm run clean && npm run build"
   },
   "repository": {
     "type": "git",
