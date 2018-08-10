@@ -1,15 +1,15 @@
 {
-  "name": "hoodie",
+  "name": "flakr",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rollup -i src/index.js -o dist/hoodie.js -m -f umd -n hoodie",
+    "build": "rollup -i src/index.js -o dist/flakr.js -m -f umd -n flakr",
     "test": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/huozhi/hoodie.git"
+    "url": "git+https://github.com/huozhi/flakr.git"
   },
   "author": "huozhi",
   "license": "MIT",

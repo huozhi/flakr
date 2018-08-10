@@ -1,4 +1,4 @@
-# hoodie
+# flakr
 
 ## Development
 
@@ -10,7 +10,7 @@ npm test # run jest tests
 ## Usage
 
 ```js
-import {h, render, Component} from 'hoodie'
+import {h, render, Component} from 'flakr'
 
 class View extends Component {
   render() {
