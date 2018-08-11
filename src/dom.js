@@ -33,7 +33,7 @@ function updateProperty(node, name, currValue, nextValue) {
   if (name === 'style') {
     const styles = Object.assign({}, currValue, nextValue)
     for (const key in styles) {
-      node[name] = nextValue || ''
+      node[name][key] = nextValue || ''
     }
   } else {
     if (name[0] === 'o' && name[1] === 'n') {
