@@ -27,11 +27,6 @@ function unmount(container) {
   }
 }
 
-function update(element, container) {
-  unmount(container)
-  mount(element, container)
-}
-
 function render(element, container) {
   if (container.dataset[ROOT_KEY]) {
     const id = container.dataset[ROOT_KEY]

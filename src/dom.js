@@ -1,11 +1,11 @@
 import utils from './utils'
+import EventsHub from './events-hub'
 
 const EXPICITY_ATTRS = ['list', 'draggable', 'spellcheck'/*, 'translate'*/]
 
 function createDOMTextElement(value) {
   if (!utils.isTruthy(value)) {
-    // placeholder
-    return document.createComment(value)
+    return document.createComment(value) // placeholder
   }
   return document.createTextNode(value)
 }
@@ -37,13 +37,17 @@ function updateProperty(node, name, currValue, nextValue) {
     }
   } else {
     if (name[0] === 'o' && name[1] === 'n') {
-      const event = name.slice(2)
-      if (typeof nextValue !== 'function') {
-        node.removeEventListener(event, currValue)
-      } else if (typeof currValue !== 'function') {
-        node.addEventListener(event, nextValue)
+      if (!node._events) node._events = EventsHub()
+      
+      name = name.slice(2)
+      const listened = node._events.has(name)
+      const eventProxy = node._events.proxy(name, nextValue)
+
+      if (!listened && typeof nextValue === 'function') {
+        node.addEventListener(name, eventProxy)
+      } else if (listened && typeof nextValue !== 'function') {
+        node.removeEventListener(name, eventProxy)
       }
-      return
     } else if (name in node && !EXPICITY_ATTRS.includes(name)) {
       node[name] = nextValue == null ? '' : nextValue
     } else if (nextValue != null && nextValue !== false) {

@@ -3,6 +3,7 @@ import {h, render, Component} from '../src'
 class View extends Component {
   render() {
     const {text, visible} = this.props
+    const listener = visible ? (() => console.log(1)) : (() => console.log(2))
     return (
       <div>
         <button className="btn" onclick={() => console.log('hello cls')}>
@@ -13,7 +14,7 @@ class View extends Component {
             visible
           </div>
         }
-        <MemeberHub count={Math.ceil(Math.random() * 10)} />
+        <MemeberHub listener={listener} count={Math.ceil(Math.random() * 10)} />
       </div>
     )
   }
@@ -21,10 +22,13 @@ class View extends Component {
 
 class MemeberHub extends Component {
   render() {
-    const {count} = this.props
+    const {count, listener} = this.props
     const data = Array(count).fill().map((_, i) => i)
     return (
       <div className="hub">
+        <div>
+          <button onclick={listener}>test listener</button>
+        </div>
         {data.map(v => <span>{v}</span>)}
       </div>
     )
