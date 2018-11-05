@@ -22,7 +22,7 @@ class View extends Component {
             visible
           </div>
         }
-        <MemeberHub listener={listener} count={Math.ceil(Math.random() * 10)} />
+        <ChildComponent listener={listener} value={Math.ceil(Math.random() * 10)} />
       </div>
     )
   }
